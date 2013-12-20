@@ -44,7 +44,7 @@ module WebsocketRails
             # handle version checking here
           end
 
-          trigger Stomp::Message.connected(connection)
+          trigger Stomp::Message.connected(message, connection)
         else
           dispatch message
         end

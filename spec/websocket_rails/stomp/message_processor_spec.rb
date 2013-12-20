@@ -6,7 +6,7 @@ module WebsocketRails
 
       SUBSCRIBE_MESSAGE = ["SUBSCRIBE\n", "destination:/queue/foo\n", "\n", "body value\n", "\000\n"].join
 
-      let(:connection) { double("Conection") }
+      let(:connection) { double("Conection").as_null_object }
       let(:subscribe_message) { Frame.new(SUBSCRIBE_MESSAGE) }
       let(:message) { Stomp::Message.new(subscribe_message, connection) }
 

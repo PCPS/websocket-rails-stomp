@@ -13,18 +13,27 @@ module WebsocketRails
         message
       end
 
-      def self.connected(connection)
+      def self.connected(connect_message, connection)
         message = Stomp::Message.new(nil, connection)
         message.command = :CONNECTED
         message.headers[:version] = "1.2"
+        message.headers[:host] = WebsocketRails.config.hostname
+        message
+      end
+
+      def self.send_message(send_message, connection)
+        message = Stomp::Message.new(nil, connection)
+        message.command = :SEND
+        message.headers = send_message.headers.dup
+        message.body = send_message.body.dup
         message
       end
 
       def self.receipt(message, connection)
         message.command = :RECEIPT
-        message_id = message.headers[:'message-id']
+        message_id = message.headers.delete('message-id')
         message.headers.clear
-        message.headers[:'receipt-id'] = message_id
+        message.headers['receipt-id'] = message_id
         message.body = nil
         message
       end
@@ -65,6 +74,10 @@ module WebsocketRails
         @frame.headers
       end
 
+      def headers=(new_headers)
+        @frame.headers = new_headers
+      end
+
       def body
         @frame.body
       end
@@ -78,9 +91,9 @@ module WebsocketRails
         result = command.to_s + "\n"
 
         body_length_bytes = body.respond_to?(:bytesize) ? body.bytesize : body.length
-        headers[:'content-length'] = "#{body_length_bytes}" unless headers[:suppress_content_length]
+        headers['content-length'] = "#{body_length_bytes}" unless headers[:suppress_content_length]
 
-        headers[:'content-type'] = "text/plain; charset=UTF-8" unless headers[:'content-type']
+        headers['content-type'] = "text/plain; charset=UTF-8" unless headers['content-type']
 
         self.headers.each_pair do |key, value|
           result << "#{key.to_s}:#{value}\n"

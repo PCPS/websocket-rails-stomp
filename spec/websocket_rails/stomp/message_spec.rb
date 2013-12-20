@@ -13,6 +13,17 @@ module WebsocketRails
       let(:subscribe_message) { Frame.new(SUBSCRIBE_MESSAGE) }
       subject { Message.deserialize(SUBSCRIBE_MESSAGE, connection) }
 
+      describe ".send_message" do
+        it "creates a valid SEND message" do
+          original = double(Message)
+          original.stub(:headers).and_return(destination: 'queue')
+          original.stub(:body).and_return "body"
+          message = Message.send_message(original, connection)
+          message.body.should == original.body
+          message.headers[:destination].should == 'queue'
+        end
+      end
+
       describe ".deserialize" do
         it "deserializes a valid stomp message" do
           Message.deserialize(SUBSCRIBE_MESSAGE, connection).frame.to_s.should == subscribe_message.to_s
